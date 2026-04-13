@@ -1,0 +1,5 @@
+Handlers
+    The handlers handle the methods to be called in the routes. In my own way as the service 
+Dtos
+Middleware
+routes

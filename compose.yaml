@@ -1,0 +1,53 @@
+services:
+  real-estate-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: real-estate-api
+    ports:
+      - "8085:8085"
+    environment:
+      APP_ENV: development
+      HTTP_PORT: 8085
+      DATABASE_URL: postgres://postgres:postgres123@real-estate-db:5432/realestate?sslmode=disable
+    depends_on:
+      real-estate-db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  migrate:
+    image: migrate/migrate:latest
+    container_name: real-estate-migrate
+    depends_on:
+      real-estate-db:
+        condition: service_healthy
+    volumes:
+      - ./migrations:/migrations
+    command:
+      [
+        "-path", "/migrations",
+        "-database", "postgres://postgres:postgres123@real-estate-db:5432/realestate?sslmode=disable",
+        "up"
+      ]
+    restart: "no"
+
+  real-estate-db:
+    image: postgres:17-alpine
+    container_name: real-estate-db
+    environment:
+      POSTGRES_DB: realestate
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    ports:
+      - "5432:5432"
+    volumes:
+      - real-estate-postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d realestate"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  real-estate-postgres_data:

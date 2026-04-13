@@ -1,0 +1,90 @@
+
+A common Go setup is:
+
+repository → service → handler → router → app
+
+And for multiple HTTP resources, the usual pattern is:
+
+one handler type per resource/domain
+one constructor per handler
+router accepts handlers, not services
+app wiring creates all dependencies in one place
+
+Why this is the standard approach
+
+    It gives you:
+
+     -clear separation of concerns
+     -easier testing
+     -easier replacement of dependencies
+     -cleaner growth as features increase
+
+Each layer has one job:
+
+    repository talks to DB
+    service holds business logic
+    handler translates HTTP to service calls
+    router maps URLs to handler methods
+    app wires dependencies together
+
+
+Recommended folder structure
+internal/
+  app/
+    app.go
+  repository/
+    user_repository.go
+    department_repository.go
+    apartment_repository.go
+  service/
+    user_service.go
+    department_service.go
+    apartment_service.go
+  transport/http/
+    handlers/
+      user_handler.go
+      department_handler.go
+      apartment_handler.go
+    routes/
+      router.go
+      user_routes.go
+      department_routes.go
+      apartment_routes.go
+
+
+
+Updated Folder structure
+myapp/
+├── cmd/
+│   └── api/
+│       └── main.go
+├── internal/
+│   ├── config/
+│   │   └── config.go
+│   ├── database/
+│   │   └── postgres.go
+│   ├── db/
+│   │   ├── db.go
+│   │   ├── models.go
+│   │   ├── querier.go
+│   │   ├── users.sql.go
+│   │   └── user_sessions.sql.go
+│   ├── service/
+│   │   └── auth_service.go
+│   └── transport/
+│       └── http/
+│           └── auth_handler.go
+├── db/
+│   ├── migrations/
+│   │   ├── 000001_create_users.up.sql
+│   │   ├── 000001_create_users.down.sql
+│   │   ├── 000002_create_user_sessions.up.sql
+│   │   ├── 000002_create_user_sessions.down.sql
+│   │   ├── 000003_create_set_updated_at_function.up.sql
+│   │   └── 000003_create_set_updated_at_function.down.sql
+│   └── query/
+│       ├── users.sql
+│       └── user_sessions.sql
+├── sqlc.yaml
+├── Makefile
+└── go.mod
