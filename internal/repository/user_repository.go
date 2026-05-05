@@ -24,7 +24,6 @@ func NewUserRepository(db *Store) *UserRepository {
 
 func (r *UserRepository) RegisterUser(ctx context.Context, req RegisterUserInput) (db.CreateUserRow, error) {
 	var result db.CreateUserRow
-
 	err := r.s.InTx(ctx, func(q *db.Queries) error {
 
 		user, err := q.CreateUser(ctx, db.CreateUserParams{
@@ -50,7 +49,6 @@ func (r *UserRepository) RegisterUser(ctx context.Context, req RegisterUserInput
 		result = user
 		return nil
 	})
-
 	return result, err
 }
 func (r *UserRepository) List(c context.Context, params db.GetUsersParams) ([]db.GetUsersRow, error) {

@@ -4,8 +4,8 @@ import (
 	"errors"
 	"real-estate-app/internal/db"
 	"real-estate-app/internal/service"
-	"real-estate-app/internal/transport/http/Dtos/request"
-	"real-estate-app/internal/transport/http/Dtos/response/Common"
+	"real-estate-app/internal/transport/dtos/request"
+	"real-estate-app/internal/transport/dtos/response/Common"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"

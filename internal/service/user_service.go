@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 	"real-estate-app/internal/db"
 	"real-estate-app/internal/repository"
 	"real-estate-app/internal/service/auth"
@@ -136,10 +135,11 @@ func (s *UserService) RegisterUser(ctx context.Context, input repository.Registe
 	if input.Email == "" || input.Password == "" {
 		return RegisterUserOutput{}, ErrValidation
 	}
+
 	//check unique email
 	result, _ := s.repo.CheckUniqueEmail(ctx, input.Email)
-	if result {
-		return RegisterUserOutput{}, errors.New("the email you entered exist for another record")
+	if result == true {
+		return RegisterUserOutput{}, ErrEmailExists
 	}
 
 	hashPass, err := auth.HashPassword(input.Password)

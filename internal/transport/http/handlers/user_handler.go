@@ -7,7 +7,8 @@ import (
 	"real-estate-app/internal/service"
 	"real-estate-app/internal/transport/dtos/request"
 	"real-estate-app/internal/transport/dtos/response"
-	"real-estate-app/internal/transport/http/Dtos/response/Common"
+	"real-estate-app/internal/transport/dtos/response/Common"
+	"real-estate-app/internal/validator"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -21,16 +22,8 @@ func NewUserHandler(userService *service.UserService) *UserHandler {
 	return &UserHandler{userService: userService}
 }
 
-type createUserRequest struct {
-	Email     string `json:"email" binding:"required"`
-	Password  string `json:"password" binding:"required min=4"`
-	FirstName string `json:"firstname" binding:"required max=20"`
-	LastName  string `json:"lastname" binding:"required max=20"`
-	Role      string `json:"role" binding:"required"`
-}
-
 func (h *UserHandler) CreateUser(c *gin.Context) {
-	var req createUserRequest
+	var req request.CreateUserRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		resp := Common.BadRequest[uuid.UUID]()
@@ -38,10 +31,11 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 		return
 	}
 
-	if err := c.ShouldBindJSON(&req); err != nil {
+	// Validate
+	if errs, err := validator.ValidateStruct(req); err != nil {
 		c.JSON(400, gin.H{
-			"message": "invalid request body",
-			"error":   err.Error(),
+			"message": "validation failed",
+			"errors":  errs,
 		})
 		return
 	}
@@ -55,6 +49,12 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 	})
 
 	if err != nil {
+		if errors.Is(err, service.ErrEmailExists) {
+			resp := Common.BadRequest[service.RegisterUserOutput]("email already exists")
+			c.JSON(resp.Code, resp)
+			return
+		}
+
 		if errors.Is(err, service.ErrValidation) {
 			resp := Common.BadRequest[service.RegisterUserOutput]()
 			c.JSON(resp.Code, resp)
